@@ -42,7 +42,7 @@ class Command(BaseCommand):
         base = pathlib.Path(dir)
         for p in sorted(set(glob.glob(str(base / pattern)))):
             if p.endswith(".json"):
-                paths.append(p.removesuffix('.json'))
+                paths.append(pathlib.Path(p).resolve())
 
         fixture_file_map: dict[str, pathlib.Path] = {}
         for p in paths:
