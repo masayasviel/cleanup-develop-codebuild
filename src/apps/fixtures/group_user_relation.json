@@ -1,0 +1,23 @@
+[
+  {
+    "model": "defaultdb.GroupUserRelation",
+    "fields": {
+      "group": 10,
+      "user": 11
+    }
+  },
+  {
+    "model": "defaultdb.GroupUserRelation",
+    "fields": {
+      "group": 11,
+      "user": 11
+    }
+  },
+  {
+    "model": "defaultdb.GroupUserRelation",
+    "fields": {
+      "group": 12,
+      "user": 13
+    }
+  }
+]

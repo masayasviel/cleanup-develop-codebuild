@@ -1,0 +1,42 @@
+[
+  {
+    "model": "defaultdb.Article",
+    "fields": {
+      "created_at": "2025-09-01T12:00:00",
+      "updated_at": "2025-09-01T12:00:00",
+      "title": "記事1",
+      "article_path": "path/to/article1",
+      "user_id": 11
+    }
+  },
+  {
+    "model": "defaultdb.Article",
+    "fields": {
+      "created_at": "2025-09-01T12:00:00",
+      "updated_at": "2025-09-01T12:00:00",
+      "title": "記事2",
+      "article_path": "path/to/article2",
+      "user_id": 12
+    }
+  },
+  {
+    "model": "defaultdb.Article",
+    "fields": {
+      "created_at": "2025-09-01T12:00:00",
+      "updated_at": "2025-09-01T12:00:00",
+      "title": "記事3",
+      "article_path": "path/to/article3",
+      "user_id": 13
+    }
+  },
+  {
+    "model": "defaultdb.Article",
+    "fields": {
+      "created_at": "2025-09-01T12:00:00",
+      "updated_at": "2025-09-01T12:00:00",
+      "title": "記事4",
+      "article_path": "path/to/article4",
+      "user_id": 12
+    }
+  }
+]

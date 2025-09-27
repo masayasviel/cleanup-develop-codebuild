@@ -1,0 +1,34 @@
+[
+  {
+    "model": "defaultdb.Group",
+    "pk": 10,
+    "fields": {
+      "name": "React",
+      "parent": 2
+    }
+  },
+  {
+    "model": "defaultdb.Group",
+    "pk": 11,
+    "fields": {
+      "name": "Angular",
+      "parent": 2
+    }
+  },
+  {
+    "model": "defaultdb.Group",
+    "pk": 12,
+    "fields": {
+      "name": "MySQL",
+      "parent": 4
+    }
+  },
+  {
+    "model": "defaultdb.Group",
+    "pk": 13,
+    "fields": {
+      "name": "notion",
+      "parent": 6
+    }
+  }
+]
