@@ -67,9 +67,12 @@ class Command(BaseCommand):
         cyclic_fixtures = [table for table in cyclic_tables if table in fixture_file_map]
 
         # 依存関係が解決済みのfixtureを投入
-        for table in sorted_fixtures:
-            for fpath in fixture_file_map[table]:
-                management.call_command(loaddata.Command(), str(fpath), verbosity=0)
+        if sorted_fixtures:
+            sorted_fixture_paths = [
+                str(fixture_file_map[table])
+                for table in sorted_fixtures
+            ]
+            management.call_command(loaddata.Command(), *sorted_fixture_paths, verbosity=0)
 
         # 循環参照されるテーブルをリトライ戦略で追加
         remaining = cyclic_fixtures.copy()
