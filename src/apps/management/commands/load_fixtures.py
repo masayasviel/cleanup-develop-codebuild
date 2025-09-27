@@ -22,10 +22,11 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--dir",
-            action="append",
+            type=str,
         )
         parser.add_argument(
             "--glob",
+            type=str,
             default="*/fixtures/*.json",
         )
 
