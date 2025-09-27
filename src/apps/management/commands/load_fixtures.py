@@ -63,16 +63,12 @@ class Command(BaseCommand):
         print(f"依存解決済み: {sorted_list}")
         print(f"循環参照: {cyclic_tables}")
 
-        sorted_fixtures = [table for table in sorted_list if table in fixture_file_map]
-        cyclic_fixtures = [table for table in cyclic_tables if table in fixture_file_map]
+        sorted_fixtures = [str(fixture_file_map[table]) for table in sorted_list if table in fixture_file_map]
+        cyclic_fixtures = [str(fixture_file_map[table]) for table in cyclic_tables if table in fixture_file_map]
 
         # 依存関係が解決済みのfixtureを投入
         if sorted_fixtures:
-            sorted_fixture_paths = [
-                str(fixture_file_map[table])
-                for table in sorted_fixtures
-            ]
-            management.call_command(loaddata.Command(), *sorted_fixture_paths, verbosity=0)
+            management.call_command(loaddata.Command(), *sorted_fixtures, verbosity=0)
 
         # 循環参照されるテーブルをリトライ戦略で追加
         remaining = cyclic_fixtures.copy()
@@ -81,14 +77,12 @@ class Command(BaseCommand):
                 break
             failed = []
             for table in remaining:
-                ok = True
-                for fpath in fixture_file_map[table]:
-                    try:
-                        management.call_command(loaddata.Command(), str(fpath), verbosity=0)
-                    except Exception:
-                        ok = False
-                if not ok:
+                try:
+                    management.call_command(loaddata.Command(), table, verbosity=0)
+                except Exception:
                     failed.append(table)
+            if not failed:
+                break
             remaining = failed.copy()
         else:
             raise RuntimeError(f"最大リトライ回数 {self.MAX_RETRIES} を超えても以下の fixture を投入できませんでした: {remaining}")
