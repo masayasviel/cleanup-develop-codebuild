@@ -1,14 +1,14 @@
 from collections import deque
+import glob
 import os
 import pathlib
 
 from django.core import management
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.core.management.commands import loaddata
 from django.db import connection
 
 
-PATH = pathlib.Path(__file__).parent.resolve()
 QUERY = """SELECT
   TABLE_NAME AS table_name,
   REFERENCED_TABLE_NAME AS reference_table_name
@@ -19,14 +19,34 @@ FROM
 class Command(BaseCommand):
     help = 'dependency_load_fixture'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--dir",
+            action="append",
+        )
+        parser.add_argument(
+            "--glob",
+            default="*/fixtures/*.json",
+        )
+
     MAX_RETRIES = 5
 
     def handle(self, *args, **options):
-        fixture_files = set()
-        for _root, _dirs, files in os.walk(PATH.parent.parent / 'fixtures'):
-            for file in files:
-                if file.endswith('.json'):
-                    fixture_files.add(file.removesuffix('.json'))
+        paths: list[pathlib.Path] = []
+
+        dir = options.get("dir")
+        pattern = options.get("glob")
+        if not dir:
+            raise CommandError("--dir is required")
+        base = pathlib.Path(dir)
+        for p in sorted(set(glob.glob(str(base / pattern)))):
+            if p.endswith(".json"):
+                paths.append(p.removesuffix('.json'))
+
+        fixture_file_map: dict[str, pathlib.Path] = {}
+        for p in paths:
+            table = p.stem
+            fixture_file_map.setdefault(table, p)
 
         dependency_map: dict[str, set[str]] = dict()
         rows = self._get_table_dependency()
@@ -42,12 +62,13 @@ class Command(BaseCommand):
         print(f"依存解決済み: {sorted_list}")
         print(f"循環参照: {cyclic_tables}")
 
-        sorted_fixtures = [table for table in sorted_list if table in fixture_files]
-        cyclic_fixtures = [table for table in cyclic_tables if table in fixture_files]
+        sorted_fixtures = [table for table in sorted_list if table in fixture_file_map]
+        cyclic_fixtures = [table for table in cyclic_tables if table in fixture_file_map]
 
         # 依存関係が解決済みのfixtureを投入
         if sorted_fixtures:
-            management.call_command(loaddata.Command(), *sorted_fixtures, verbosity=0)
+            for fpath in fixture_file_map[table]:
+                management.call_command(loaddata.Command(), str(fpath), verbosity=0)
 
         # 循環参照されるテーブルをリトライ戦略で追加
         remaining = cyclic_fixtures.copy()
@@ -55,13 +76,14 @@ class Command(BaseCommand):
             if not remaining:
                 break
             failed = []
-            for table in remaining:
+            ok = True
+            for fpath in fixture_file_map[table]:
                 try:
-                    management.call_command(loaddata.Command(), table, verbosity=0)
+                    management.call_command(loaddata.Command(), str(fpath), verbosity=0)
                 except Exception:
-                    failed.append(table)
-            if not failed:
-                break
+                    ok = False
+            if not ok:
+                failed.append(table)
             remaining = failed.copy()
         else:
             raise RuntimeError(f"最大リトライ回数 {self.MAX_RETRIES} を超えても以下の fixture を投入できませんでした: {remaining}")

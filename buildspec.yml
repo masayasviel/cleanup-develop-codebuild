@@ -7,17 +7,27 @@ phases:
     commands:
       - apt-get update
       - apt-get install -y default-mysql-client
-      - pip install -r requirements.txt
+      - pip install -r "$CODEBUILD_SRC_DIR/requirements.txt"
 
   build:
     commands:
+      - cd "$CODEBUILD_SRC_DIR_SECONDARY"
+
       - for sql in $(ls sql/*.sql | sort); do
           echo "Applying $sql";
           mysql -h $MYSQL_HOST -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < $sql;
         done
 
-      - cd src
+      - cd "$CODEBUILD_SRC_DIR_SECONDARY/src"
 
       - python manage.py migrate
 
-      - python manage.py load_fixtures
+      - cd "$CODEBUILD_SRC_DIR/src"
+
+      - python manage.py load_fixtures \
+          --dir "$CODEBUILD_SRC_DIR_SECONDARY/src" \
+          --glob "*/fixtures/*.json"
+
+      - python manage.py load_fixtures \
+          --dir "$CODEBUILD_SRC_DIR/src" \
+          --glob "*/fixtures/*.json"
