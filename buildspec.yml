@@ -24,4 +24,4 @@ phases:
 
       - python manage.py load_fixtures --dir "$CODEBUILD_SRC_DIR_SECONDARY/src"
 
-      - python manage.py load_fixtures --dir "$CODEBUILD_SRC_DIR"
+      - python manage.py load_fixtures --dir "$CODEBUILD_SRC_DIR/db"
